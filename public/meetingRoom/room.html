@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>화상 채팅방</title>
+
+    <link rel="stylesheet" href="./room.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- 왼쪽 사이드바 -->
+        <header class="room-sidebar">
+
+            <div class="room-info">
+                <p class="room-label">MEETING ROOM</p>
+                <h1 id="room-title">방 제목</h1>
+            </div>
+
+            <div class="participant-list">
+                <h2>참가자</h2>
+                <details class="control-details">
+                    <summary>
+                        <span class="participant-status"></span>
+                        <div>
+                            <p class="participant-name" id="local-nickname">닉네임</p>
+                            <span class="participant-id">@ 내id</span>
+                        </div>
+                    </summary>
+
+                    <div class="control-menu">
+                        <button id="local-mic-button" type="button">
+                            <img src="./image/mic-on.png" alt="음소거">
+                        </button>
+                        <button id="share-screen-button" type="button">
+                            <img src="./image/screen-share-on.png" alt="방송 중지">
+                        </button>
+                    </div>
+                </details>
+
+                <details class="control-details">
+                    <summary>
+                        <span class="participant-status"></span>
+                        <div>
+                            <p class="participant-name" id="remote-nickname">상대방 닉네임</p>
+                            <span class="participant-id">@ 상대방id</span>
+                        </div>
+                    </summary>
+
+                    <div class="control-menu">
+                        <button id="remote-mic-button" type="button">
+                            <img src="./image/mic-on.png" alt="음소거">
+                        </button>
+
+                        <button id="remote-share-screen-button" type="button">
+                            <img src="./image/screen-share-on.png" alt="방송 중지">
+                        </button>
+                    </div>
+                </details>
+            </div>
+
+            <button id="leave-button" type="button">
+                나가기
+            </button>
+
+        </header>
+
+        <!-- 오른쪽 영상 영역 -->
+        <main class="meeting-area">
+            <section class="camera-area">
+                <div class="video-box local-video-box">
+                    <video id="local-video" autoplay muted playsinline></video>
+
+                    <p>내 닉네임 · 나</p>
+                </div>
+
+                <div class="video-box remote-video-box">
+                    <video id="remote-video" autoplay playsinline></video>
+                    <p>상대방 닉네임</p>
+                </div>
+
+            </section>
+
+            <section class="share-screen-area">
+                <div class="video-box screen-box local-share-screen-box">
+                    <video id="local-share-screen" autoplay muted playsinline></video>
+                    <p>내 화면 공유</p>
+                </div>
+                <div class="video-box screen-box remote-share-screen-box">
+                    <video id="remote-share-screen" autoplay playsinline></video>
+                    <p>상대방 화면 공유</p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>

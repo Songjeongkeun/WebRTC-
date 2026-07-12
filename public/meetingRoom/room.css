@@ -1,0 +1,252 @@
+:root {
+    --color-main: #222831;
+    --color-sub: #393e46;
+    --color-accent: #00adb5;
+    --color-light: #eeeeee;
+    --color-text-sub: #bbbbbb;
+    --color-button-border: #555b65;
+    --color-video-label: rgba(34, 40, 49, 0.76);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: var(--color-light);
+    color: var(--color-main);
+    font-family: Arial, sans-serif;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+}
+
+.room-sidebar {
+    width: 250px;
+    min-height: 100vh;
+    padding: 28px 20px;
+    background-color: var(--color-main);
+    color: var(--color-light);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.room-info {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--color-sub);
+}
+
+.room-label {
+    margin-bottom: 7px;
+    color: var(--color-accent);
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+#room-title {
+    font-size: 25px;
+}
+
+.participant-list {
+    padding: 25px 0;
+    border-bottom: 1px solid var(--color-sub);
+}
+
+.participant-list h2 {
+    margin-bottom: 17px;
+    color: var(--color-light);
+    font-size: 15px;
+}
+
+.participant {
+    padding: 11px 10px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background-color: var(--color-sub);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.participant-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background-color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.participant-name {
+    margin-bottom: 2px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.participant-id {
+    color: var(--color-text-sub);
+    font-size: 11px;
+}
+
+.control-details {
+    margin-bottom: 12px;
+    border: 1px solid var(--color-sub);
+    border-radius: 10px;
+    background-color: var(--color-sub);
+    overflow: hidden;
+}
+
+.control-details summary {
+    padding: 10px 14px;
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.control-details summary::after {
+    content: "›";
+    margin-left: auto;
+    font-size: 22px;
+    transition: transform 0.2s;
+}
+
+.control-details[open] summary::after {
+    transform: rotate(90deg);
+}
+
+.summary-icon {
+    width: 25px;
+    text-align: center;
+}
+
+.control-menu {
+    padding: 6px 10px 6px;
+    margin-top: 0;
+    border-top: 1px solid var(--color-main);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.control-menu button {
+    width: 50%;
+    height: 36px;
+    padding: 8px;
+    padding-right: 10px;
+    font-size: 14px;
+    color: var(--color-light);
+    border: 1px solid var(--color-button-border);
+    border-radius: 14px;
+    background-color: var(--color-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s,
+        transform 0.2s;
+}
+
+.control-menu button:hover {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent);
+    transform: translateY(-1px);
+}
+
+.control-menu button img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: invert(1);
+}
+
+#leave-button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 25px;
+    border: 1px solid var(--color-accent);
+    border-radius: 10px;
+    background-color: var(--color-main);
+    color: var(--color-light);
+}
+
+#leave-button:hover {
+    background-color: var(--color-accent);
+    color: var(--color-main);
+}
+
+.meeting-area {
+    width: 100%;
+    min-width: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.camera-area,
+.share-screen-area {
+    display: flex;
+    gap: 20px;
+}
+
+.video-box {
+    position: relative;
+    left: 15px;
+    width: 48.5%;
+    overflow: hidden;
+    border-radius: 14px;
+    background-color: var(--color-main);
+}
+
+.video-box video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--color-main);
+    object-fit: cover;
+}
+
+.screen-box video {
+    object-fit: contain;
+}
+
+.video-box p {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    background-color: var(--color-video-label);
+    color: var(--color-light);
+    font-size: 13px;
+}
+
+@media (max-width: 1024px) {
+    .share-screen-area {
+        flex-wrap: wrap;
+    }
+
+    .video-box {
+        width: 100%;
+    }
+}

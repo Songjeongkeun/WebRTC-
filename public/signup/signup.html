@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>signup</title>
+    <link rel="stylesheet" href="signup.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            <form id="signupForm" action="/auth/signup" method="post">
+                <div class="signupForm">
+                    <div class="signupTitle">
+                        <h1>회원가입</h1>
+                    </div>
+                    <p>아이디</p>
+                    <input type="text" name="userid" id="id" placeholder="아이디를 입력하세요.">
+                    <p>비밀번호</p>
+                    <input type="password" name="password" id="pw" placeholder="비밀번호를 입력하세요.">
+                    <p>이름</p>
+                    <input type="text" name="name" id="name" placeholder="이름을 입력하세요.">
+                    <p>이메일</p>
+                    <input type="email" name="email" id="email" placeholder="이메일을 입력하세요.">
+                    <button id="signupBtn">회원가입</button>
+                    <div class="login">
+                        <a href="/auth/login">로그인</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="/signup/signup.js"></script>
+</body>
+
+</html>
