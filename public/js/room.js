@@ -1,19 +1,34 @@
 const socket = io()
 
-const roomtitle = document.getElementById("room-title")
-const LocalId = document.getElementById("local-nickname")
-const RemoteId = document.getElementById("remote-nickname")
+// const roomtitle = document.getElementById("room-title")
+// const LocalId = document.getElementById("local-nickname")
+// const RemoteId = document.getElementById("remote-nickname")
+const roomTitle = document.getElementById("room-title")
+const localNickname = document.getElementById("local-nickname")
+const remoteNickname = document.getElementById("remote-nickname")
 
-const LocalMicBtn = document.getElementById("local-mic-button")
-const LocalScreenBtn = document.getElementById("share-screen-button")
-const RemoteMicBtn = document.getElementById("remote-mic-button")
-const RemoteScreenBtn = document.getElementById("remote-share-screen-button")
+// const LocalMicBtn = document.getElementById("local-mic-button")
+// const LocalScreenBtn = document.getElementById("share-screen-button")
+// const RemoteMicBtn = document.getElementById("remote-mic-button")
+// const RemoteScreenBtn = document.getElementById("remote-share-screen-button")
+const localMicButton = document.getElementById("local-mic-button")
+const localScreenButton = document.getElementById("share-screen-button")
+const remoteMicButton = document.getElementById("remote-mic-button")
+const remoteScreenButton = document.getElementById("remote-share-screen-button")
 const leaveButton = document.getElementById("leave-button")
 
-const LocalVideo = document.getElementById("local-video")
-const RemoteVideo = document.getElementById("remote-video")
-const LocalScreen = document.getElementById("local-share-screen")
-const RemoteScreen = document.getElementById("remote-share-screen")
+// const LocalVideo = document.getElementById("local-video")
+// const RemoteVideo = document.getElementById("remote-video")
+// const LocalScreen = document.getElementById("local-share-screen")
+// const RemoteScreen = document.getElementById("remote-share-screen")
+const localVideo = document.getElementById("local-video")
+const remoteVideo = document.getElementById("remote-video")
+const localScreenVideo = document.getElementById("local-share-screen")
+const remoteScreenVideo = document.getElementById("remote-share-screen")
+
+// const localMicImg = document.getElementById("local-mic-button")
+const localMicImage = localMicButton.querySelector("img")
+const localScreenImage = localScreenButton.querySelector("img")
 
 const rtcConfig = {
     iceServers: [
@@ -22,19 +37,26 @@ const rtcConfig = {
 }
 
 function setControlsEnabled(enabled){
-    LocalMicBtn.disabled = !enabled
-    LocalScreenBtn.disabled = !enabled
+    // LocalMicBtn.disabled = !enabled
+    // LocalScreenBtn.disabled = !enabled
+    localMicButton.disabled = !enabled
+    localScreenButton.disabled = !enabled
     leaveButton.disabled = !enabled
 }
 
-let localStrem = null
-let cameraTrack = null
+let localStream = null
+let remoteStream = null
+// let cameraTrack = null
+// let microphoneTrack = null
+let videoTrack = null
+let audioTrack = null
+let screenTrack = null
 let isMicOn = true
 let isCameraOn = true
 let peerConnection = null
 
 async function startLocalMedia() {
-    localStrem = await navigator.mediaDevices.getUserMedia({
+    localStream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: {
             echoCancellation: true,
@@ -43,40 +65,62 @@ async function startLocalMedia() {
         }
     })
 
-    cameraTrack = localStrem.getVideoTracks()[0]
-    LocalVideo.srcObject = localStream
+    // cameraTrack = localStream.getVideoTracks()[0]
+    // microphoneTrack = localStream.getAudioTracks()[0]
+    videoTrack = localStream.getVideoTracks()[0]
+    audioTrack = localStream.getAudioTracks()[0]
+    // LocalVideo.srcObject = localStream
+    localVideo.srcObject = localStream
 }
 
-const params = new URLSearchParams(window.location.search);
-let roomId = params.get("roomId")
+// const params = new URLSearchParams(window.location.search);
+// let roomId = params.get("roomId")
+const searchParams = new URLSearchParams(window.location.search)
+const roomId = searchParams.get("roomId")
 
 // roomId
 
 // 마이크 on-off 기능
-const localMicImg = document.getElementById("local-mic-button")
-LocalMicBtn.addEventListener("click", () => {
+// LocalMicBtn.addEventListener("click", () => {
+localMicButton.addEventListener("click", () => {
     if(!localStream){
         return
     }
+    // track 변수 선언 X -> 오디오 트랙을 가져와야 함.
+    //track.enabled = isMicOn
+    // const audioTrack = localStream.getAudioTracks()[0]
 
+    // if(!audioTrack){
+    // if(!microphoneTrack){
+    if(!audioTrack){
+        return
+    }
     isMicOn = !isMicOn
-        track.enabled = isMicOn
+    // audioTrack.enabled = isMicOn
+    // microphoneTrack.enabled = isMicOn
+    audioTrack.enabled = isMicOn
     
-    LocalMicBtn.src = "../image/mic-off.png"
+    // LocalMicBtn.src = "../image/mic-off.png"
+    localMicImage.src = isMicOn
+        ? "./image/mic-on.png"
+        : "./image/mic-off.png"
 })
 
 // 카메라 띄우기
 
 // 화면 공유
-LocalScreenBtn.addEventListener("click", async () => {
+// LocalScreenBtn.addEventListener("click", async () => {
+localScreenButton.addEventListener("click", async () => {
     try{
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
             video: true
         })
-        const screenTrack = screenStream.getVideoTracks()[0]
+        // const screenTrack = screenStream.getVideoTracks()[0]
+        screenTrack = screenStream.getVideoTracks()[0]
         localVideo.srcObject = screenStream
         alert("화면 공유를 시작했습니다")
-        LocalScreenBtn.src = "../image/screen-share-off.png"
+        // LocalScreenBtn.src = "../image/screen-share-off.png"
+        localScreenImage.src = "./image/screen-share-off.png"
         // 화면 끄기
         screenStream.onended = async () => {
             localVideo.srcObject = localStream
@@ -96,7 +140,8 @@ if(peerConnection){
 // WebRTC 연결 객체 생성
 peerConnection = new RTCPeerConnection(rtcConfig)
 // 연결이 되면 상대방 영상을 담을 MediaStream 생성
-remoteVideo = new MediaStream()
+// remoteVideo = new MediaStream()
+remoteStream = new MediaStream()
 // 상대방 영상을 <video> 태그에 띄어주기
 remoteVideo.srcObject = remoteStream
 
