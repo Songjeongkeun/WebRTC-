@@ -406,7 +406,19 @@ io.on("connection", (socket) => {
         }
     )
 
+    /**
+     * 사용자가 화면 공유를 눌렀을 때 처리
+     */
+    socket.on("screen-share-state", ({ roomId, isSharing } = {}) => {
+        if(!isRoomMember(socket, roomId)){
+            return
+        }
 
+        socket.to(roomId).emit("screen-share-state", {
+            isSharing
+        })
+    })
+    
     /**
      * 사용자가 나가기 버튼을 눌렀을 때 처리
      */
