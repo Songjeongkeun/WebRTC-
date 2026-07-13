@@ -207,6 +207,7 @@ function leaveCurrentRoom(socket) {
 }
 
 
+
 /**
  * 해당 Socket 사용자가 실제로 요청한 방에 참가 중인지 확인한다.
  *
@@ -224,10 +225,8 @@ function isRoomMember(socket, roomId) {
     return Boolean(
         // 방이 존재해야 한다.
         room &&
-
         // Socket에 저장된 현재 방 ID가 요청한 방 ID와 같아야 한다.
         socket.data.roomId === roomId &&
-
         // 해당 방의 members에도 Socket ID가 있어야 한다.
         room.members.has(socket.id)
     )
