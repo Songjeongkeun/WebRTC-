@@ -6,6 +6,7 @@
     --color-white: #ffffff;
     --color-gray: #aeb4bd;
     --color-border: #d8dadd;
+    --color-placeholder: #8f959d;
     --shadow: 0 12px 30px rgba(34, 40, 49, 0.14);
 }
 
@@ -38,6 +39,27 @@ button {
     flex-direction: column;
 }
 
+input {
+    width: 40%;
+    height: 42px;
+    margin-right: 20px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 16px;
+    outline: none;
+    transition:
+        border-color 0.2s,
+}
+
+input:hover,
+input:focus {
+    border-color: var(--color-accent);
+}
+
+input::placeholder {
+    color: var(--color-placeholder);
+}
 
 .header {
     min-height: 90px;
