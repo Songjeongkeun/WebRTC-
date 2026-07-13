@@ -27,7 +27,7 @@
                     <summary>
                         <span class="participant-status"></span>
                         <div>
-                            <p class="participant-name" id="local-nickname">닉네임</p>
+                            <p class="participant-name" id="local-username">사용자 이름</p>
                             <span class="participant-id">@ 내id</span>
                         </div>
                     </summary>
@@ -46,7 +46,7 @@
                     <summary>
                         <span class="participant-status"></span>
                         <div>
-                            <p class="participant-name" id="remote-nickname">상대방 닉네임</p>
+                            <p class="participant-name" id="remote-username">상대방 사용자 이름</p>
                             <span class="participant-id">@ 상대방id</span>
                         </div>
                     </summary>
@@ -97,6 +97,10 @@
             </section>
         </main>
     </div>
+
+    <!-- Socket.IO 클라이언트를 먼저 불러온 뒤 회의실 코드를 실행한다 -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../js/room.js"></script>
 </body>
 
 </html>
