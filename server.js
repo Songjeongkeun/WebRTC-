@@ -418,7 +418,7 @@ io.on("connection", (socket) => {
             isSharing
         })
     })
-    
+
     /**
      * 사용자가 나가기 버튼을 눌렀을 때 처리
      */

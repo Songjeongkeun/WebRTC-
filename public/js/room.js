@@ -31,10 +31,9 @@ const rtcConfig = {
 }
 
 let localStream = null
-let remoteStream = null
 let remoteScreenStream = null
 let peerConnection = null
-let screenTransceiver = null
+let screenSender = null
 
 let videoTrack = null
 let audioTrack = null
@@ -125,7 +124,7 @@ async function addPendingIceCandidates() {
  * 로컬 트랙을 연결 객체에 추가하고 다음 이벤트를 등록한다
  *
  * onicecandidate: 발견한 네트워크 후보를 서버를 통해 상대에게 전달한다
- * ontrack: 카메라와 화면 공유 트랙을 각각의 video 요소에 표시한다
+ * ontrack: 서로 다른 MediaStream을 카메라와 화면 공유 영역에 표시한다
  * onconnectionstatechange: 현재 WebRTC 연결 상태를 콘솔에서 확인한다
  */
 function createPeerConnection() {
@@ -134,18 +133,10 @@ function createPeerConnection() {
     }
 
     peerConnection = new RTCPeerConnection(rtcConfig)
-    remoteStream = new MediaStream()
-    remoteVideo.srcObject = remoteStream
 
-    localStream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, localStream)
-    })
-
-    // 카메라 영상과 별개로 화면 공유 영상만 전송할 통로를 미리 만든다
-    // 최초 Offer와 Answer에 포함되므로 화면 공유 시작 시 재협상이 필요 없다
-    screenTransceiver = peerConnection.addTransceiver("video", {
-        direction: "sendrecv"
-    })
+    // 카메라와 마이크는 같은 localStream으로 전송한다
+    peerConnection.addTrack(videoTrack, localStream)
+    peerConnection.addTrack(audioTrack, localStream)
 
     peerConnection.onicecandidate = (event) => {
         if (!event.candidate) {
@@ -159,20 +150,27 @@ function createPeerConnection() {
     }
 
     peerConnection.ontrack = (event) => {
-        // 화면 공유 전용 transceiver로 받은 트랙은 별도 화면에 표시한다
-        if (event.transceiver === screenTransceiver) {
-            remoteScreenStream = new MediaStream([event.track])
-            remoteScreenVideo.srcObject = remoteScreenStream
+        const receivedStream = event.streams[0]
+
+        if (!receivedStream) {
             return
         }
 
-        // 그 외 트랙은 상대방 카메라와 마이크 스트림으로 처리한다
-        const alreadyAdded = remoteStream
-            .getTracks()
-            .some((remoteTrack) => remoteTrack.id === event.track.id)
+        // 오디오 트랙은 카메라 스트림에 함께 포함되므로 별도로 분류하지 않는다
+        if (event.track.kind !== "video") {
+            return
+        }
 
-        if (!alreadyAdded) {
-            remoteStream.addTrack(event.track)
+        // 처음 도착한 비디오 스트림은 상대방 카메라 스트림이다
+        if (!remoteVideo.srcObject) {
+            remoteVideo.srcObject = receivedStream
+            return
+        }
+
+        // 카메라와 ID가 다른 두 번째 비디오 스트림은 화면 공유 스트림이다
+        if (remoteVideo.srcObject.id !== receivedStream.id) {
+            remoteScreenStream = receivedStream
+            remoteScreenVideo.srcObject = remoteScreenStream
         }
     }
 
@@ -359,7 +357,7 @@ socket.on("peer-left", () => {
 
     peerConnection?.close()
     peerConnection = null
-    screenTransceiver = null
+    screenSender = null
     remoteScreenStream = null
 
     if (!isLeaving && localStream) {
@@ -384,14 +382,13 @@ localMicButton.addEventListener("click", () => {
 })
 
 /**
- * 화면 공유 전용 transceiver에 화면 트랙을 연결한다
+ * 카메라와 다른 MediaStream으로 화면 공유 트랙을 전송한다
  *
- * replaceTrack을 사용하므로 Offer와 Answer를 다시 교환하지 않아도 된다
- * 카메라 sender는 변경하지 않으므로 상대방 카메라는 remoteVideo에 유지된다
- * 화면 공유 트랙은 상대방의 remoteScreenVideo에 별도로 표시된다
+ * 최초 공유에서는 addTrack으로 새 sender를 만들고 Offer와 Answer를 다시 교환한다
+ * 두 번째 공유부터는 기존 screenSender의 트랙만 교체하므로 재협상하지 않는다
  */
 localScreenButton.addEventListener("click", async () => {
-    if (!peerConnection || !screenTransceiver) {
+    if (!peerConnection) {
         return
     }
 
@@ -404,8 +401,20 @@ localScreenButton.addEventListener("click", async () => {
         screenTrack = screenStream.getVideoTracks()[0]
         localScreenVideo.srcObject = screenStream
 
-        // 카메라 sender가 아닌 화면 공유 전용 sender를 사용한다
-        await screenTransceiver.sender.replaceTrack(screenTrack)
+        if (!screenSender) {
+            // 첫 화면 공유는 카메라와 다른 screenStream으로 트랙을 추가한다
+            screenSender = peerConnection.addTrack(
+                screenTrack,
+                screenStream
+            )
+
+            // 새 트랙 정보를 상대방에게 알리기 위해 SDP를 다시 협상한다
+            await createAndSendOffer()
+        } else {
+            // 이후 화면 공유는 기존 sender의 트랙만 교체한다
+            await screenSender.replaceTrack(screenTrack)
+        }
+
         localScreenImage.src = "./image/screen-share-off.png"
 
         socket.emit("screen-share-state", {
@@ -414,12 +423,9 @@ localScreenButton.addEventListener("click", async () => {
         })
 
         screenTrack.onended = async () => {
-            if (
-                peerConnection?.connectionState !== "closed" &&
-                screenTransceiver
-            ) {
-                // 카메라 트랙으로 바꾸지 않고 화면 공유 전송만 중단한다
-                await screenTransceiver.sender.replaceTrack(null)
+            if (peerConnection?.connectionState !== "closed" && screenSender) {
+                // sender는 유지하고 화면 공유 트랙 전송만 중단한다
+                await screenSender.replaceTrack(null)
             }
 
             localScreenVideo.srcObject = null
@@ -440,7 +446,7 @@ localScreenButton.addEventListener("click", async () => {
 /**
  * 상대방의 화면 공유 시작·종료 상태를 화면 요소에 반영한다
  *
- * 화면 공유 트랙은 ontrack에서 remoteScreenStream에 저장한다
+ * 화면 공유 트랙은 ontrack에서 별도 MediaStream으로 구분해 저장한다
  * 공유가 시작되면 remote-share-screen에 연결하고 종료되면 화면을 비운다
  */
 socket.on("screen-share-state", ({ isSharing }) => {
