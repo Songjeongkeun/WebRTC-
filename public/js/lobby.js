@@ -1,6 +1,33 @@
 const lobbyList = document.querySelector(".lobby-list")
 const createRoomButton = document.getElementById("create-room")
 const roomTitleInput = document.getElementById("room-title-input")
+const usernameInput = document.getElementById("username-input")
+
+/**
+ * 기존 방에 참가할 사용자의 이름을 prompt로 입력받는다
+ *
+ * 취소를 누르면 null을 반환해 입장을 중단하고,
+ * 공백만 입력하면 이름을 다시 요청한다
+ *
+ * @returns {string|null} 정리된 사용자 이름 또는 취소 시 null
+ */
+function promptUsername() {
+    while (true) {
+        const input = prompt("방에서 사용할 이름을 입력하세요")
+
+        if (input === null) {
+            return null
+        }
+
+        const username = input.trim()
+
+        if (username) {
+            return username
+        }
+
+        alert("사용자 이름을 입력해주세요")
+    }
+}
 
 /**
  * 서버에서 받은 방 배열을 로비 목록에 표시한다
@@ -68,7 +95,9 @@ async function loadRooms() {
 
 // create-room 버튼을 누르면 실행
 /**
- * 방 생성 버튼을 누르면 방 제목을 입력받아 서버에 전달한다
+ * 방 생성 버튼을 누르면 사용자 이름과 방 제목을 확인한다
+ * 사용자 이름은 회의실 페이지에서 사용할 수 있도록 sessionStorage에 저장하고,
+ * 방 제목은 서버에 전달해 새로운 방을 생성한다
  *
  * POST /rooms 요청 본문:
  * { title: "사용자가 입력한 방 제목" }
@@ -77,6 +106,15 @@ async function loadRooms() {
  * 반환받은 roomId를 쿼리 파라미터에 넣어 회의실로 이동한다
  */
 createRoomButton.addEventListener("click", async () => {
+    // 방 생성자는 로비의 입력란에 작성한 이름을 사용한다
+    const username = usernameInput.value.trim()
+
+    if (!username) {
+        alert("사용자 이름을 입력하세요")
+        usernameInput.focus()
+        return
+    }
+
     // lobby.html의 room-title-input에 입력한 값을 방 제목으로 사용한다
     const title = roomTitleInput.value.trim()
 
@@ -102,6 +140,10 @@ createRoomButton.addEventListener("click", async () => {
         if (!response.ok) {
             throw new Error(createdRoom.message || "방 생성에 실패했습니다")
         }
+
+        // 회의실의 room.js가 방 생성자의 이름을 읽을 수 있도록 저장한다
+        sessionStorage.setItem("username", username)
+
         // 새로 만든 룸으로 이동
         // window(브라우저 창에) location(주소창(주소입력칸)에) href(주소를 입력해라) 여기까지는 읽기만
         // = 대입 연산자를 기준으로 /room?roomId=${data.roomId} 이 주소로 갈아타라(네트워크 요청 또는 주소로 이동)
@@ -115,7 +157,8 @@ createRoomButton.addEventListener("click", async () => {
 
 
 /**
- * 로비 목록에서 클릭한 방의 roomId를 읽어 회의실로 이동한다
+ * 로비 목록에서 클릭한 방의 roomId를 읽고 참가자 이름을 prompt로 입력받는다
+ * 입력한 이름은 sessionStorage에 저장한 뒤 회의실로 이동한다
  *
  * event.target은 실제로 클릭한 자식 요소일 수 있으므로
  * closest로 가장 가까운 .lobby-item 요소를 찾는다
@@ -134,6 +177,16 @@ lobbyList.addEventListener("click", (event) => {
         alert("방 ID를 찾을 수 없습니다")
         return
     }
+
+    const username = promptUsername()
+
+    // prompt에서 취소를 누른 경우 방에 입장하지 않는다
+    if (username === null) {
+        return
+    }
+
+    // 회의실의 room.js가 참가자 이름을 읽을 수 있도록 저장한다
+    sessionStorage.setItem("username", username)
 
     window.location.href =
         `/meetingRoom/room.html?roomId=${roomId}`

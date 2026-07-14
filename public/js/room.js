@@ -3,6 +3,8 @@ const socket = io()
 const roomTitle = document.getElementById("room-title")
 const localUsername = document.getElementById("local-username")
 const remoteUsername = document.getElementById("remote-username")
+const localParticipantId = document.getElementById("local-participant-id")
+const remoteParticipantId = document.getElementById("remote-participant-id")
 
 const localMicButton = document.getElementById("local-mic-button")
 const localScreenButton = document.getElementById("share-screen-button")
@@ -21,7 +23,7 @@ const remoteMicImage = remoteMicButton.querySelector("img")
 
 const searchParams = new URLSearchParams(window.location.search)
 const roomId = searchParams.get("roomId")
-// 로비에서 입력하고 sessionStorage에 저장한 사용자 이름을 사용한다
+// 방 생성 시 입력하거나 방 참가 시 prompt로 받아 저장한 이름을 사용한다
 const username = sessionStorage.getItem("username") || "사용자"
 
 const rtcConfig = {
@@ -274,7 +276,8 @@ async function initializeRoom() {
  */
 socket.on("peer-joined", async ({ username: joinedUsername }) => {
     try {
-        remoteUsername.textContent = joinedUsername || "상대방"
+        const remoteName = joinedUsername || "상대방"
+        remoteUsername.textContent = remoteName
         await createAndSendOffer()
     } catch (error) {
         console.error("Offer 생성 실패", error)
@@ -288,7 +291,8 @@ socket.on("peer-joined", async ({ username: joinedUsername }) => {
 socket.on("offer", async ({ sdp, username: senderUsername }) => {
     try {
         const connection = createPeerConnection()
-        remoteUsername.textContent = senderUsername || "상대방"
+        const remoteName = senderUsername || "상대방"
+        remoteUsername.textContent = remoteName
 
         await connection.setRemoteDescription(sdp)
         await addPendingIceCandidates()
@@ -351,6 +355,7 @@ socket.on("ice-candidate", async ({ candidate }) => {
  */
 socket.on("peer-left", () => {
     remoteUsername.textContent = "상대방 없음"
+    remoteParticipantId.textContent = "@상대방없음"
     remoteVideo.srcObject = null
     remoteScreenVideo.srcObject = null
     pendingIceCandidates = []

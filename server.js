@@ -6,7 +6,7 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-const PORT = 4000
+const PORT = 3000
 const MAX_ROOM_MEMBERS = 2
 
 const rooms = new Map()
@@ -446,13 +446,13 @@ io.on("connection", (socket) => {
     })
 })
 
-
+const HOST = "0.0.0.0"
 /**
  * HTTP 서버를 3000번 포트에서 실행한다.
  *
  * Express와 Socket.IO가 동일한 HTTP 서버를 사용해야 하므로
  * app.listen()이 아닌 server.listen()을 사용한다.
  */
-server.listen(PORT, () => {
-    console.log(`서버 실행: http://localhost:${PORT}`)
+server.listen(PORT, HOST, () => {
+    console.log(`서버 실행: http://${HOST}:${PORT}`)
 })
